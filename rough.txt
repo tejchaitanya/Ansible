@@ -1,0 +1,17 @@
+user --
+	name
+	password
+	home
+	uid
+	comment
+================================
+copy
+     src 
+     dest
+
+==================================
+apt 
+	name
+	state
+	update_cache=yes
+====================================

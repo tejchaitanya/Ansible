@@ -1,0 +1,350 @@
+class -2    IMP Modules in ansible
+---------
+
+command :this module is used to excute linux commands on the remote managed nodes
+=======
+
+shell :this module is used to excute shell scripts  on the  managed nodes
+======
+	it can also be used for executing commands that are related to redirection and piping
+
+ping :this module is used for check if a remote server is pingable or not
+=====
+
+user :this is used for user management on the managed nodes like creating users,setting home directory etc 
+=====
+
+file : this is used for creating file ,deleting files and directories  on the managed nodes
+=====
+
+copy : this is used for copying files and directories from the controller to the managed nodes
+======
+
+fetch:this module is used for copying files and directories from managed nodes to controller
+======
+
+apt :this is used for installing and uninstalling ,upgrading software packages on ubuntu flavour linux machines
+====
+
+yum:this also works as apt module ,works on redhat linux ,centos,fedora etc
+====
+
+git: this is used for performing git version controlling on the managed nodes
+====
+
+service :this is used for starting,stopping and restartting services on the managed nodes
+=======
+
+uri :this is used for checking if a remote url is reachable from the managed nodes
+====
+
+debug:this is used to for displaying the register var data on the console 
+=====
+
+stat:this is used to capture about files and folders present on the managed nodes
+===
+
+include:this module is used to call other play books in the form of child play books
+========
+
+get_url:this module is used to downloading files from remote servers
+========
+
+docker-image:this module is used to handle commands related to docker-images 
+============
+
+docker-container:this module is used to handle commands related to docker-containers
+==================
+
+docker-login:this module is used to login into docker hub
+============
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+ansible can configure nodes (remote servers ) in 3 ways 
+		1.Adhoc commands
+		2.playbooks  (interview)
+		3.Roles(interview)
+
+
+ 
+Adhoc commands:
+===============
+
+
+
+syntax :     ansible all/group_name/ipaddress -i Path_of_inventory_module -m module_name -a 'arguments'
+--------
+
+
+inventory file :where ansible stores all information about managed nodes
+		it contains all ip addresses of managed nodes 
+
+default location is "/etc/ansible/"
+
+$cd /etc/ansible/
+$ls
+ansible.cfg  hosts   roles
+
+NOTE:hosts file is nothing but an inventory file
+
+===========================================================================
+ansible command to see the output of 'ls -la ' on all the managed nodes 
+
+$ ls -la
+$ansible all -i    /etc/ansible/hosts    -m command -a 'ls -la'
+
+
+OUTPUT will come from two machines 
+
+
+	
+		$ansible all -i  -m command -a 'ls -la'
+
+
+	note 1:it will work on default inventory file
+	     if we create your own inventory file compulsary we have to give "-i your inventory"
+	     if you use default inventory file its a optional "-i /etc/ansible/hosts"
+
+	note 2:command module is the default moduke in ansible 
+
+		$ansible all  -a 'ls -la'
+
+
+====================================================================================
+ansible command to see the memory info of all managed nodes
+
+$ansible all -a 'free -m'
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+shell:  this module is used to excute shell scripts  on the  managed nodes
+======
+	it can also be used for executing commands that are related to redirection and piping
+
+
+
+ansible command to execute free -m on all the managed nodes and store it in file1
+    
+          ansible all -m shell -a 'free -m >file1'
+
+
+		note:this command will create a file1 in all managed nodes  
+
+		checking from controller machine to managed nodes whether that file is created or not 
+
+			$ssh ip_address_of_node
+                         after executing this command it will ask pswd
+			then automatically Ip_address_of_managed_node will open
+			if you want to exit from the managed node then we have to exit
+                     
+-----------------------------------------------------------------------
+Installing docker on managed nodes
+
+
+
+
+$ansible all -m command -a 'curl -fsSL https://get.docker.com -o get-docker.sh' -b
+$ansible all -m shell -a 'sh get-docker.sh' -b
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+User Module:   $sudo useradd username  {linux command}
+==========
+In ansible ,
+	ansible all -m user -a 'name=sai password=intelli' -b
+
+
+		-b represent sudo
+
+Go to one managed node:
+  to check whether user is created or not
+  $sudo vim /etc/passwd
+
+-----------------------------------------------------------------------------------------------------------------------
+user module is also be used assigning home directory ,user id ,default shell etc
+
+
+  ansible all -m user 'name=anu password=intelliqit home=/home/ubuntu/anu comment="a normal user " uid =123 shell=/bin/bas' -b 
+
+
+NOTE: -b stands for 'become' it is used to for getting higner previlages managed nodes
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ansible  command  to create a file
+
+
+$ansible all -m file 'name=/hello/hi state=touch'
+
+
+
+note:
+state=directory ,it will create directory
+state= touch for creating file 
+state =absent for delete file /directories
+
+======================
+
+
+file module can be also be used for changing the ownership,group ownership,and permission of files and directories
+
+
+$ansible all -m file -a 'name=hi state=touch owner=root group=vishnu mode=705' -b
+
+==========================================
+
+COPY
+----
+
+for files 
+
+$ansible all -m copy -a 'src=/file dest=/hello '
+create a chain of directories one with in anther and copy all of into managed nodes
+
+for directories
+$mkdir -p d1/d2/d3
+$ansible all -m file -a 'src=/d1 dest=/home/ubuntu'
+
+
+we can change ownership,permission,group ownership of the file also
+$cat > file
+this file is created by owner 
+   $ansible all -m copy -a 'src=/file dest=/home/ubuntu owner=vishnu  group=sai mode=700' -b
+
+copy module can also replace the content of the file
+
+	$ansible all -m copy 'content="hi this is vishnu" dest=file1'
+
+================================================================
+FETCH: copy the files from managed nodes to controller 
+=====
+	Note:in copy src represent controller
+		in fetch src represent nodes
+
+	$ansible all -m fetch -a 'src=/temp/passwd dest=/tmp'
+
+
+
+=================================================================
+APT : it is used to install packages in all nodes 
+---
+	$ansible all -m apt 'name=git state=present' -b
+
+
+note :present means install
+      absent means uninstall
+      latest means new version
+
+To update the apt repository ansible uses update_cache=yes
+
+ansible command to install tree after updating the apt repository
+ $ansible all -m apt 'name=git state=present update_cache=yes' -b
+
+
+install tomcat 8 and tomcat8-admin in all managed nodes 
+and copy tocat-users.xml from controller to all managed nodes
+
+
+1. create tomcat-users.xml
+	<tomcat-users>
+		<user username="intelliq" password="1234" roles="manager-script"/>
+	</tomcat-users>
+
+2. install tomcat 8 in all managed nodes	
+	$ansible all -m apt -a 'name=tomcat8 state=present' -b
+
+3. install tomcat8 admin  in all managed nodes	
+	$ansible all -m apt -a 'name=tomcat8-admin state=present' -b
+4.copy tomcat-users.xml file
+	$ansible all -m copy -a 'src=tomcat-users.xml dest=/etc/tomcat8' -b
+
+
+
+
+============================================================================
+
+service : this module is used to stop ,start ,restart the services 
+--------
+ $ansible all -m service -a 'name=tomcat8 state=restarted' -b
+
+
+restarted means restart the service
+started means start the service
+stopped means stop the service
+
+===============================================================
+
+
+
+git : this module is used git version controlling system in managed nodes
+----
+
+$ansible all -m git 'repo=https://github.com/selenium-saikrishna/FunctionalTesting.git 
+                        dest=/home/ubuntu/FunctionTesting' 
+
+
+==================================================================
+get_url : this module is uded to downlad the file from the internet
+--------
+ 	Downloading the jenkins.war file in all managed node
+
+$ansible all -m git -a 'url=http://mirrors.jenkins.io/war-stable/latest/jenkins.war dest=/home/ubuntu/Jenkinsdownload"
+
+
+======================================================================
+uri  :this module is used to check whether the url is reachable or not
+----
+
+$ansible all -m uri -a 'url=https://google.com status_code=200' 
+
+status_code=200 means is reachable or not
+status_code= -1 means not reachale
+===============================================================
+replace: this module is used to replace the all values in all managed nodes
+--------
+changing the port number in server.xml
+	$ansible all -m replace -a 'regexp=8080 replace=9090 path=/etc/tomcat8/server.xml' -b
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,144 @@
+Use case:
+--------
+check if dir1 directory is there in managed node we wont do anything
+if dir1 directory  is not there then we have dir1.txt in managed nodes
+  Hints
+----------
+stat module is used to check whether the file or directory is created in managed nodes or not
+and we have to store that result in register variable
+and display the data using debug module
+based on the value we have craete file or not 
+
+
+---
+- name: yml file for above use case
+  hosts: all
+  tasks:
+   - name: checking file is there or not and storing to register variable 
+     stat:
+      path: /home/ubuntu/dir1
+     register: a
+   - name: displaying the register a data using debug module
+     debug:
+      var: a
+   - name: creating file if directory is not there
+     file:
+      name: /home/ubuntu/dir1
+      state: touch
+     when a.stat.exists == false
+...
+
+
+
+
+Note: the output of any module is captured in json file format,this output can be captured in a variable which belongs to
+      register type and it can be displayed by using debug module
+=======================================================================================================================
+Child playbooks:
+===============
+ include module is used to called child playbook in yaml
+child play book we can write only modules 
+
+EXECUTING CHILD PLAYBOOK FROM PARENT PLAYBOOK
+-----------------------------------------------
+
+This can be done using a module in ansible called as include 
+
+$vi childplaybook19.yml
+---
+- name: installing java 
+  apt: openjdk-8-jdk
+  state: present
+...
+
+
+$vi parentplaybook.yml
+...
+- name: using parent book
+  hosts: all
+  tasks: 
+   include: childplaybook19.yaml
+---
+
+Note :always we have to execute parent playbook
+
+$ansible-playbook parentplaybook.yml -b
+-----------------------------------------
+
+child-playbook another example:configuring tomcat8 using child playbooks
+===========================
+$vi install.yaml
+---
+- name: install tomcat
+  apt:
+   name: tomcat8
+   state: present
+...
+
+$vi copy_tomcat_users.yaml
+
+---
+- name:
+  copy:
+   src: /home/ubuntu/tomcat-users.xml
+   dest: /etc/tomcat8
+...
+
+$vi replace_port_yaml
+---
+- name:
+  replace:
+   regexp: 8080
+   replace: 9090
+   path: /etc/tomcat8/server.xml
+...
+
+$vi restart.yaml
+---
+- name:
+  service:
+   name: tomcat8
+   state: restarted
+... 
+
+$vi check_url_response.yaml
+
+---
+- name:
+  uri:
+   url: "{{item}}"
+   status_code: 200
+  with_items:
+    - http://172.31.92.93.9090
+    - http://172.32.93.94.9090 
+...
+
+
+$vi parentplaybook.yaml
+---
+- name: installing tomcat with all childplaybooks
+  hosts:
+  tasks:
+    - name: by using include module
+      include: "{{item}}"
+      with_items:
+        - install.yml
+        - copy_tomcat_users.yaml
+        - replace_port_yaml
+        - restart.yaml
+        - check_url_response.yaml
+
+...
+
+
+
+
+
+
+
+
+
+
+
+
+

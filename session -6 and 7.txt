@@ -1,0 +1,292 @@
+ansible uses 3 types of variables
+	global variables (CMD)
+	post scope variables (SEPERATE GROUP AND FILE)
+	play scope variables(INSIDE FILE)
+
+
+global scope variable:
+-----------------------
+these variables are passed from the command promt using "--extra-vars " and they have the highest priority.
+
+ansible playbook for installing or uninstalling software packages
+------------------------------------------------------------------
+$vi playbook5.yaml
+
+---
+- name: installing/uninstalling softwares
+  hosts: all
+  tasks:
+   - name: installing uninstalling software packages
+     apt:
+       name:  "{{a}}"
+       state: "{{b}}"
+       update_cache: "{{c}}"
+
+...
+
+$ansible-playbook playbook5.yaml --extra-vars "a=git b=absent c=no" -b
+
+note :by using same playbook we can install tree also
+----
+
+$ansible-playbook playbook5.yaml --extra-vars "a=tree b=present c=no" -b
+
+========================================================================================================
+
+Use case:create a user ,assigning home directory to user   and downloading files into directory
+----------------------------------------------------------------
+$vi playbook7.yaml
+---
+- name: create a user ,assigning home directory to user   and downloading files into directory
+  hosts: all
+  tasks:
+   - name: crating users and assigning home directory
+     user:
+      name: "{{a}}"
+      password: "{{b}}"
+      home: "{{c}}"
+   - name: downloading the jenkin.war
+     get_url:
+      url: "{{d}}"
+      dest: "{{e}}"  
+...
+
+$ansible-playbook playbook7.yaml --extra-vars"a=vishnu b=vishnu c=/home/tmp d=http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+						e=/home/tmp" -b
+
+
+============================================================================================================
+play scope variable:
+-------------------
+
+These variables have last level of priority and they are declared with in the playbook in the vars section
+
+$vi playbook8.yaml
+---
+- name: play scope example
+  hosts: all
+  vars:
+   - a: tomcat
+   - b: present
+   - c: yes
+  tasks:
+   -name:
+    apt:
+     name:  "{{a}}"
+     state: "{{b}}"
+     update_cache: "{{c}}"
+
+
+...
+
+
+$ansible-playbook playbook8.yaml -b   ------>install tomcat
+
+$ansible-playbook playbook8.yaml --extra-vars "a=git"        ------------>install git and remaining variables will take from vars section
+														(play scope variables)
+
+
+
+
+
+NOTE:
+The above playbook works like a template whose default behaviour is to install tomcat8 but we can bypass that behaviour 
+and make it work on some other data by passing it as a global variable using '--extra-vars'
+
+================================================================================================================================
+GROUPING :
+---------
+In inventory file we are having several nodes Ip's
+if you want to do task for only certain nodes then we have to make the nodes into groups
+ Ex:total 10 nodes 
+	5 nodes tomcat
+	5 nodes git 
+
+first we have to open inventory file
+$cd /etc/ansible/hosts
+$vi hosts
+[tomcatgroup]
+172.31.92.85
+172.31.92.86
+172.31.92.87
+172.31.92.88
+172.31.92.89
+[gitgroup]
+172.31.92.75
+172.31.92.76
+172.31.92.77
+172.31.92.78
+172.31.92.79
+
+
+
+
+Note if you want to install tree in both the groups
+---------------------------------------------------
+[treegroup:children]
+tomcatgroup
+gitgroup
+
+
+	"add these three lines in the inventory file"
+
+
+===================================
+
+post scope variables:
+----------------------
+	these variables are classified into two types :
+		1.variables work on group of machines
+		2.variables work on single machines
+
+    variables work on group of machines
+   ----------------------------------------
+These variables should be created in a file whose name should be same as group name from the 
+inventory file [group name should be inventory file] 
+This file should be created in the folder 'group_vars'  [mandatory] 
+This group_vars folder should be created in same folder where all books will present
+	
+
+
+
+	1.move to folder where the playbooks are present
+		cd path_of_playbooks_directory
+	2.create a directory called group_vars and move into it
+		mkdir group_vars
+		cd group_vars
+		vim gitgroup  [this fille name  should same as group name in inventory file]
+
+---
+a: git
+b: present
+c: yes
+...
+ $cd ..
+ $vi playbook9.yaml
+---
+- name: installing git
+  hosts: gitgroup
+  tasks:
+   - name: install git
+     apt:
+      name: "{{a}}"
+      state: "{{b}}"
+      cache_update: "{{c}}"
+...
+
+
+
+
+$ansible-playbook playbook9.yml -b
+
+
+
+===================================================================================
+
+
+variable to work on single host
+-----------------------------
+	these variable shoul be created in a file whose name should be iP-address-of 1 mac-ine from the inventory file
+	these file should be created in a folder called hosts_vars
+	and these folder should be created in same location where all the playbooks are present 
+
+
+	1.move to folder where the playbooks are present
+		cd path_of_playbooks_directory
+	2.create a directory called group_vars and move into it
+		mkdir hosts-vars
+		cd hosts_vars
+		vim 172.31.92.85  [this fille name  should same as group name in inventory file]
+
+---
+a: tomcat9
+b: present
+c: yes
+...
+ $cd ..
+ $vi playbook10.yaml
+---
+- name: installing tomcat9
+  hosts: 172.31.92.85
+  tasks:
+   - name: install tomcat9
+     apt:
+      name: "{{a}}"
+      state: "{{b}}"
+      cache_update: "{{c}}"
+...
+
+
+
+$ansible-playbook playbook9.yaml -b
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+LOOPS in ansible
+---------------
+	we can execute specific modules multiple times using Loops
+	loops can be implemented using 'with_items' and 'with_sequence'
+
+
+Ansible playbook for installing multiple playbook software packages
+
+---
+- name: installing multiple software packages by using loops
+  hosts: all
+  task:
+   - name: installing multiple packages using loops
+     apt:
+      name: "{{items}}"
+      state: present
+      cache_update: no
+     with_items:
+      - tree
+      - git
+      - tomcat8
+...
+--------------------------------------------------------------------------------------------------------------------------
+
+INstalling and uninstalling software application
+---------------------------------------------------
+
+---
+- name: installing and uninstalling softwares
+  hosts: all
+  tasks: 
+   - name: installing and uninstalling
+     apt: 
+      name: "{{item.a}}"
+      state: "{{item.b}}"
+      cache_update: "{{item.c}}"
+     with_items:
+      - {a: tree,b: present,c: yes}
+      - {a: git,b: present,c: yes}
+      - {a: tomcat9,b: absent,c: no}
+...
+
+---------------------------------------------------
+create users and create files/dir im managed nodes
+=====================================================
+$vi playbook10.yaml
+
+---
+- name: creating users , files and directories
+  hosts: all
+  tasks:
+   - name: installing directories
+     user:
+      name: "{{items.a}}"
+      password: "{{items.b}}"
+     with_items:
+      - {a: vishnu,b: vishnu}
+      - {a: krishna, b: krishna}
+   - name: installing files and directories
+     file:  
+       name: "{{items.a}}"
+       state: "{{items.b}}"
+       owner: "{{items.c}}"
+       group: "{items.d}}"
+     with_items:
+        - {a: /home/ubuntu/file,b: touch,c: root,d: root}   
+        - {a: /home/ubuntu/dir1,b: directory,c: root,d: root}     
+...

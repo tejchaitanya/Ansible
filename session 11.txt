@@ -1,0 +1,30 @@
+Ansible vault
+-------------
+This is the feature of ansible which is used for creating for protecting the content of the playbook.
+Any playbook which is locked using vaault can only be accessed using its password.
+
+1.To create a vault playbook
+   ansible-vault create playbook_name
+2.To view a playbook
+   ansible-vault view playbook_name
+3.To edit the content of vault playbook
+   ansible-vault edit playbook_name
+4.To convert a normal playbook into a vault playbook
+   ansible-vault encrypt playbook_name
+5.To convert vault playbook to normal playbook
+   ansible-vault decrypt playbook_name
+
+
+Note: all playbooks will run but we have to enter the passwords
+----------------------------------------------------------------
+Roles : 
+-----
+  Ansible roles are used to creating the playbooks in a reuable way.
+  All roles have pre defined folder structure And each folder is used for specific purpose 
+  Since all these factors are predefines it becomes easier to 
+                              create playbooks
+                              edit them 
+  ansible roles are present in the cloud site of ansible called ansible-galaxy
+                                                                ---------------
+  we can either download roles from this site or create roles on our local server 
+  

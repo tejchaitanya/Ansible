@@ -1,0 +1,27 @@
+$ ls -la
+$ansible all -i    /etc/ansible/hosts    -m command -a 'ls -la'
+
+
+OUTPUT will come from two machines 
+
+=========================================================================
+
+$vim myinventory
+172.31.91.124 (one module of node)
+
+$ansible all -i myinventory -m command -a 'ls -la'
+
+=========================================================================
+
+$ansible all -i  -m command -a 'ls -la'
+
+
+	note 1:it will work on default inventory file
+	     if we create your own inventory file compulsary we have to give "-i your inventory"
+	     if you use default inventory file its a optional "-i /etc/ansible/hosts"
+
+	note 2:command module is the default moduke in ansible 
+
+		$ansible all -i -a 'ls -la'
+
+============================================================================

@@ -1,0 +1,254 @@
+
+
+If you want to execute a module only if some other module is executed sucessfully and it has made some changes 
+Handlers are executed only after all the tasks are executed 
+Handlers are executed in the order that they are  mentioned in the section and not in the order they are called in the 
+task section
+Even if a called multiple times it will be executed only once 
+
+
+Simple Defnition:
+-----------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------
+when ever ansible playbook fail the execution will there only 
+If you want to conntinue the playbook execution even after module fails we can use error handling
+this is implemented by using three keywords
+1.block
+2.rescue
+3.always
+
+
+->if the code present in the block section fails control will come into the rescue part
+->if the block section is sucessful control does'nt come into the rescue section
+->always section is executed every time ,irrespective of whether the block section is succeed or fails
+
+
+
+Use case:some managed nodes ububtu 14 and some managed nodes are ubuntu 18
+	In ubuntu 14 we can install tomcat7 and we cant install tomcat8 because it is compactable with only  tomcat 7
+	In ubuntu 18 we can install tomcat8 and we cant install tomcat7 because it is compactable with only  tomcat 8
+	but in both we can install git 
+
+---
+- name: Error handling
+  hosts: all
+  tasks:
+   - block: 
+      - name: installing tomcat8 in ubuntu 18
+        apt:
+        name: tomcat8
+        state: present 
+     rescue:
+      - name: installing tomcat7 in ubuntu 14
+        apt:
+         name: tomcat7
+         state: present
+   - always:
+      - name: restart
+        service:
+          name: tomcat8
+          state: restarted
+         
+...
+
+$ansible-playbook playbook17.yaml -b
+
+Note: this is similar to if condition
+       
+=========================================================
+when:
+-------
+if you want to execute the module only if specific condition is true then we have to use when statements
+
+---
+- name: installing firewalld based on when condition
+  hosts: all
+  vars:
+   - a: 10
+  tasks:
+  - name: install firewalld
+    apt:
+     name: firewalld
+     state: present
+    when: a == 10    
+  
+
+...
+
+
+$ansible-playbook playbook17.yaml -b
+
+here a: 10 so condition is true so this module will be executed
+if a: 5 condition fail this module never be executed 
+
+
+=======================================================
+Register variable:
+-----------------
+after executing the commands we will get output in the form of JSON format
+if you want to store that data we have to use register variables
+for displaying the output of register modules we have to use 'debug module'
+
+---
+- name: example for register variables
+  hosts:
+  tasks: 
+   - name: creating users
+     user: 
+      name: vishnu
+      password: vishnu
+      group: root
+     register: a
+   - name: displaying the output of a
+     debug: 
+       var: a  
+...
+
+===============================
+tagging in ansible:
+-------------------
+tags are used for getting mode modular control on the playbook execution
+Using tags we can execute only certain section of the playbook
+
+
+Example:
+------
+if you want to install only some modules ,we have add tags for those some modules
+---
+- name: using modules
+  hosts: all
+  tasks: 
+   - name: 
+     apt: 
+      name: tree
+      state: present
+      cache_update: yes
+     tags: tree_instalation
+   - name:
+     user:
+      name: vishnu
+      password: vishnu
+      group: root
+      uid: 123
+   - name:
+     apt:
+      name: git
+      state: present
+      cache_update: no
+     tags: git_installation
+
+...
+$ansiple-playbook playbook7.yaml -b  ---->if you want to execute all modules
+$anisible-playbook playbook7.yaml --tags=tagged -b  --------->if you want to execute tagged module (tree and git)
+$ansible-playbook playbook7.yaml  --tags=untagged -b--------->only untagged modules will execute   (user)
+======================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

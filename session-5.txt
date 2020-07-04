@@ -1,0 +1,62 @@
+creating ansible playbooks for users in all managed nodes
+=========================================================
+$vi playbook1.yaml
+---
+- name: creating users in all managed nodes
+  hosts: all
+  tasks:
+   - name: creating users
+     user:
+       name: vishnu
+       password : vishnu
+...
+
+
+==================to check whether playbook syntax is correct or not ======
+$ansible-playbook playbook1.yaml --syntax-check
+======play book execution==================================================
+$ansible-playbook playbook1.yaml -b
+
+note :   -b represent sudo
+-------
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+Ansible playbook for creating directories and copying files
+-----------------------------------------------------------
+---
+- name: creating directories and copyting files
+  hosts: all
+  tasks:
+   - name: creating directories
+     file:
+      name: /home/ubuntu/dir1
+      state: directory
+     copy:
+      src: /home/ubuntu/hello.txt
+      dest: /home/ubuntu/dir1
+
+...
+
+
+==============================
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
